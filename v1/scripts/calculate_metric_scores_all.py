@@ -17,10 +17,14 @@ def process_hyp(hyp_file, lp, system_name='System'):
   
   cache_file = 'cache_results/' + lp + '.' + system_name + '.pickle'
   
-  subset2scores = calculate_all(src_sents, sys_sents, ref_sents, sent_annots, comet_too=True,
+  subset2scores = calculate_all_refbased(src_sents, sys_sents, ref_sents, sent_annots,
                 cache_file=cache_file, system_name=system_name)
   print_row(subset2scores, system_name=system_name)
 
+  calculate_all_qe(src_sents, sys_sents, annots=sent_annots, cache_file=cache_file,
+                     system_name=system_name)
+
+  
 sys = ['GPT4-5shot', 'ONLINE-B', 'ONLINE-M',  'ONLINE-G', 'ONLINE-W', 'ONLINE-Y',
        'NLLB_MBR_BLEU', 'NLLB_Greedy', 'Lan-BridgeMT', 'ZengHuiMT', 'GTCOM_Peter',
        'AIRC', 'CUNI-DocTransformer', 'PROMT']
