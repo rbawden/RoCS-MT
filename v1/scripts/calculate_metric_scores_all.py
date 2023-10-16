@@ -4,7 +4,8 @@ import os
 
 def process_hyp(hyp_file, lp, system_name='System'):
   trg = lp.split('-')[-1]
-  src_sents = read_file('../src/RoCS-MT.src.raw-manseg.en')
+  raw_src_sents = read_file('../src/RoCS-MT.src.raw-manseg.en')
+  norm_src_sents = read_file('../src/RoCS-MT.src.norm-manseg.en')
   sent_annots = read_annots_file('../ref/RoCS-annotated.tsv')
   sys_sents = read_file(hyp_file)
   sys_sent_docs = read_file(re.sub('.txt', '.ids.txt', hyp_file))
@@ -14,12 +15,12 @@ def process_hyp(hyp_file, lp, system_name='System'):
   ref_sents = read_file('../ref/RoCS-MT.ref.' + trg, ref=True)
   
   cache_file = 'cache_resultscache_results_wmt22-comet-da/' + lp + '.' + system_name + '.pickle'
-  subset2scores = calculate_all_refbased(src_sents, sys_sents, ref_sents, sent_annots,
+  subset2scores = calculate_all_refbased(raw_src_sents, sys_sents, ref_sents, sent_annots,
                 cache_file=cache_file, system_name=system_name)
   print_row(subset2scores, system_name=system_name)
 
   cache_file = 'cache_results/' + lp + '.' + system_name + '.pickle'
-  calculate_all_qe(src_sents, sys_sents, annots=sent_annots, cache_file=cache_file,
+  calculate_all_qe([raw_src_sents, norm_src_sents], sys_sents, annots=sent_annots, cache_file=cache_file,
                      system_name=system_name)
   cache_file = 'cache_results_wmt22-cometkiwi-da/' + lp + '.' + system_name + '.pickle'
 

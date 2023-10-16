@@ -44,9 +44,13 @@ def read_file(filename, ref=False):
 
 
 def calc_bleu(sys_sents, ref_sents):
+    assert len(sys_sents) == len(sys_sents)
+    
     return bleu.corpus_score(sys_sents, ref_sents)
 
 def calc_comet_qe(src_sents, sys_sents):
+    assert len(src_sents) == len(sys_sents)
+    
     data = [{"src": src_sent, "mt": sys_sent} \
                 for src_sent, sys_sent, ref_sent in zip(src_sents, sys_sents, ref_sents)]
     if torch.cuda.is_available():
@@ -56,6 +60,7 @@ def calc_comet_qe(src_sents, sys_sents):
 
 
 def calc_comet(src_sents, sys_sents, ref_sents):
+    assert len(src_sents) == len(sys_sents) == len(ref_sents)
     data = [{"src": src_sent, "mt": sys_sent, "ref": ref_sent} \
                 for src_sent, sys_sent, ref_sent in zip(src_sents, sys_sents, ref_sents)]
     if torch.cuda.is_available():
