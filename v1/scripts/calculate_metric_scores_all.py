@@ -13,15 +13,15 @@ def process_hyp(hyp_file, lp, system_name='System'):
     return
   ref_sents = read_file('../ref/RoCS-MT.ref.' + trg, ref=True)
   
-  cache_file = 'cache_resultscache_results_wmt22-comet-da/' + lp + '.' + system_name + '.pickle'
+  cache_file = 'cache_results_wmt22-comet-da/' + lp + '.' + system_name + '.pickle'
   subset2scores = calculate_all_refbased(src_sents, sys_sents, ref_sents, sent_annots,
                 cache_file=cache_file, system_name=system_name)
   print_row(subset2scores, system_name=system_name)
 
-  cache_file = 'cache_results/' + lp + '.' + system_name + '.pickle'
+  cache_file = 'cache_results_wmt22-cometkiwi-da/' + lp + '.' + system_name + '.pickle'
   calculate_all_qe(src_sents, sys_sents, annots=sent_annots, cache_file=cache_file,
                      system_name=system_name)
-  cache_file = 'cache_results_wmt22-cometkiwi-da/' + lp + '.' + system_name + '.pickle'
+  print_row(subset2scores, system_name=system_name)
 
   
 sys = ['GPT4-5shot', 'ONLINE-B', 'ONLINE-M',  'ONLINE-G', 'ONLINE-W', 'ONLINE-Y',
