@@ -5093,7 +5093,7 @@ sentid	tokid	raw	norm	preannot	manual	notes	finished
 159	5141	⎵	⎵			same		
 159	5142	now	now			same		
 159	5143	.	.			same		
-160	5144	Ain't	It isn't	norm_punct	grammar, norm_punct	done	x	
+160	5144	Ain't	It isn’t	norm_punct	grammar, norm_punct	done	x	
 160	5147	⎵	⎵			same		
 160	5148	amountin	amounting	truncation	phonetic_distance	done	x	
 160	5149	⎵	⎵			same		
@@ -7494,7 +7494,7 @@ sentid	tokid	raw	norm	preannot	manual	notes	finished
 237	7524	⎵	⎵			same		
 237	7525	blah	blahs	inflection	inflection	done	x	
 237	7526		.	punct_diff	punct_diff	done	x	
-238	7527	I'm	I’m	?	norm_punct	done	x	
+238	7527	I m	I’m	?	norm_punct	done	x	
 238	7530	⎵	⎵			same		
 238	7531	not	not			same		
 238	7532	⎵	⎵			same		
@@ -9639,7 +9639,7 @@ sentid	tokid	raw	norm	preannot	manual	notes	finished
 304	9672	⎵	⎵			same		
 304	9673	really	really			same		
 304	9674	⎵	⎵			same		
-304	9675	i'm	I’m	capitalisation	capitalisation, norm_punct	done	x	
+304	9675	i’m	I’m	capitalisation	capitalisation	done	x	
 304	9678	⎵	⎵			same		
 304	9679	just	just			same		
 304	9680	⎵	⎵			same		
@@ -9652,7 +9652,7 @@ sentid	tokid	raw	norm	preannot	manual	notes	finished
 304	9687	:	:			same		
 304	9688		-	punct_diff	punct_diff	done	x	
 304	9689	)	)			same		
-305	9690	i'm	I’m	capitalisation	capitalisation, norm_punct	done	x	
+305	9690	i’m	I’m	capitalisation	capitalisation	done	x	
 305	9693	⎵	⎵			same		
 305	9694	not	not			same		
 305	9695	⎵	⎵			same		
@@ -10243,7 +10243,7 @@ sentid	tokid	raw	norm	preannot	manual	notes	finished
 332	10279	⎵	⎵			same		
 332	10280	so	so			same		
 332	10281	⎵	⎵			same		
-332	10282	i'm	I’m	capitalisation	capitalisation, norm_punct	done	x	
+332	10282	i’m	I’m	capitalisation	capitalisation	done	x	
 332	10285	⎵	⎵			same		
 332	10286	a	a			same		
 332	10287	⎵	⎵			same		
@@ -31429,7 +31429,7 @@ sentid	tokid	raw	norm	preannot	manual	notes	finished
 1073	31569	wonderful	wonderful			same		
 1073	31570		,	punct_diff	punct_diff	done	x	
 1073	31571	⎵	⎵			same		
-1073	31572	i'm	I’m	capitalisation	capitalisation, norm_punct	done	x	
+1073	31572	i’m	I’m	capitalisation	capitalisation	done	x	
 1073	31575	⎵	⎵			same		
 1073	31576	pooped	pooped			same		
 1073	31577		.	punct_diff	punct_diff	done	x	
@@ -50466,7 +50466,7 @@ sentid	tokid	raw	norm	preannot	manual	notes	finished
 1741	50739	⎵	⎵			same		
 1741	50740	and	and			same		
 1741	50741	⎵	⎵			same		
-1741	50742	i'm	I’m	capitalisation	capitalisation, norm_punct	done	x	
+1741	50742	i’m	I’m	capitalisation	capitalisation	done	x	
 1741	50745	⎵	⎵			same		
 1741	50746	on	on			same		
 1741	50747	⎵	⎵			same		
@@ -54834,9 +54834,25 @@ sentid	tokid	raw	norm	preannot	manual	notes	finished
 1897	55144	get	get			same		
 1897	55145	⎵	⎵			same		
 1897	55146	it	it			same		
-1897	55147	.	.			
-1898	55170	⎵	⎵			same		
-1898	55171	repeatedly	repeatedly			same		
+1897	55147	.	.			same
+1897	55147	⎵	⎵			same
+1897	55147	but	but			same
+1897	55147	⎵	⎵			same
+1897	55147	i	I	norm_punct	capitalisation	done	x
+1897	55147	⎵	⎵			same
+1897	55147	still	still			same
+1897	55147	⎵	⎵			same
+1897	55147	think	think			same
+1897	55147	⎵	⎵			same
+1897	55147	that's	that’s	norm_punct	norm_punct	done	x
+1897	55147	⎵	⎵			same
+1897	55147	"""loooooool"""	“loool”	norm_punct	norm_punct, elongation	done	x
+1897	55147	,	,			
+1898	55171	you	You			same		
+1898	55171.1	⎵	⎵			same		
+1898	55171.2	can't	can’t	norm_punct	norm_punct	done	x		
+1898	55171.3	⎵	⎵			same		
+1898	55171.4	repeatedly	repeatedly			same		
 1898	55172	⎵	⎵			same		
 1898	55173	pronounce	pronounce			same		
 1898	55174	⎵	⎵			same		
@@ -55465,8 +55481,4 @@ sentid	tokid	raw	norm	preannot	manual	notes	finished
 1921	55802	⎵	⎵			same		
 1921	55803	:	:			same		
 1921	55804		-	punct_diff	punct_diff	done	x	
-1921	55805	)	)			same		
-						same		
-					Unfinished	2		
-					Finished	7479		
-	tokid				Same	48333		
+1921	55805	)	)			same			
