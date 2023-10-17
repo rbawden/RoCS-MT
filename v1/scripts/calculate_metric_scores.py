@@ -269,6 +269,24 @@ def print_row(subset2scores, metric, system_name='System'):
     # print number of sentences -> check that this is the same for each system
     #print('#sents & ' + ' & '.join([str(subset2scores[phen]['#sents']) for phen in phens] + [str(subset2scores['all']['#sents'])]) + r' \\')
 
+def print_row_diff(subset2scores1, subset2scores2, metric, system_name='System'):
+    phens = [x for x in sorted(subset2scores.keys()) if x != 'all' and subset2scores[x]['#sents'] > THRESHOLD]
+    # print headers
+    #print('System' + ' & ' * int(len(phens) > 0) + ' & '.join([x.replace('_', '\_') for x in phens]) + r' & all \\')
+    # print values for this system
+    #for metric in subset2scores['all']:
+    #    if metric not in ['bleu', 'comet']:
+    #        continue
+    #    prec = 1
+    #    if metric == 'comet':
+    #        prec = 3
+    prec = 1
+    if 'comet' in metric:
+        prec = 3
+    prep_system_name = re.sub('\.en-..\.txt', '', system_name.replace('_', '\_'))
+    print(prep_system_name + ' & '+ ' & '.join([prep_v(subset2scores1[phen][metric] - subset2scores2[phen][metric],  prec) for phen in phens] +
+                                               [prep_v(subset2scores1['all'][metric] - subset2scores2['all'][metric], prec)]) + r' \\')
+    
 
 if __name__ == '__main__':
     import argparse
