@@ -133,7 +133,7 @@ def calculate_all(set_src_sents, sys_sents, ref_sents, comet_func, annots=None, 
             list_comet_scores = comet_func(set_src_sents[src_set_num], sys_sents, ref_sents)
             subset2scores['all']['comet-individual-' + str(src_set_num)] = list_comet_scores
             subset2scores['all']['comet-ave-' + str(src_set_num)] = mean(list_comet_scores)
-        subset2scores['all']['comet-ave-best'] = mean([subset2scores['all']['comet-ave-' + str(r) for r in range(len(set_src_sents))])
+        subset2scores['all']['comet-ave-best'] = mean([subset2scores['all']['comet-ave-' + str(r)] for r in range(len(set_src_sents))])
             
     # calculate comet-qe by partitioned data (for each phenomenon if annots provided)
     if annots is not None:
