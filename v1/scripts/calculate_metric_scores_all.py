@@ -13,6 +13,14 @@ def process_hyp(hyp_file, lp, system_name='System'):
   if not os.path.exists('../ref/RoCS-MT.ref.' + trg):
     return
   ref_sents = read_file('../ref/RoCS-MT.ref.' + trg, ref=True)
+
+  # debugging
+  raw_src_sents = raw_src_sents[:100]
+  norm_src_sents = norm_src_sents[:100]
+  sent_annots = sent_annots[:100]
+  sys_sents = sys_sents[:100]
+  ref_sents = [ref_sents[r][:100] for r in range(len(ref_sents))]
+  ref_sents = [ref_sents[0], [x[:-1] for x in ref_sents[0]]]
   
   cache_file = 'cache_results_wmt22-comet-da/' + lp + '.' + system_name + '.pickle'
   subset2scores = calculate_all_refbased(raw_src_sents, sys_sents, ref_sents, sent_annots,

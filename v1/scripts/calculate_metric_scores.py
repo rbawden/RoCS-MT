@@ -14,7 +14,7 @@ comet_qe_model_path = download_model("Unbabel/wmt22-cometkiwi-da")
 comet_qe_model = load_from_checkpoint(comet_qe_model_path)
 bleu = BLEU()
 
-THRESHOLD = 50
+THRESHOLD = 0
 
 def read_file(filename, ref=False):
     sents = []
@@ -98,7 +98,7 @@ def mean(list_values):
     return sum(list_values)/len(list_values)
 
     
-def calculate_all_qe(src_sents, sys_sents, annots=None, cache_file=None, system_name='System'):
+def calculate_all_qe(set_src_sents, sys_sents, annots=None, cache_file=None, system_name='System'):
     '''
     src_sents is a list of sets of src_sents (like ref_sents for calculate_all_refbased). Each list
     should have the same number of sentences.
@@ -107,41 +107,44 @@ def calculate_all_qe(src_sents, sys_sents, annots=None, cache_file=None, system_
     if cache_file is not None and os.path.exists(cache_file):
         subset2scores = pickle.load(open(cache_file, 'rb'))
     dict_init(subset2scores, 'all', {})
-    
+
+    # over the entire test set, calculate comet scores for each of the sets of src sentences and averaged
     if 'comet' not in subset2scores['all']:
         subset2scores['all']['#sents'] = len(sys_sents)
-        # calculate comet scores for each of the sets of src sentences
-        for r in range(len(src_sents)):
-            comet_scores = calc_comet_qe(src_sents[r], sys_sents)
-            subset2scores['all']['comet-individual-' + str(r)] = comet_scores
-            ave_comet_score = sum(comet_scores)/len(comet_scores)
-            subset2scores['all']['comet-ave-' + str(r)] = ave_comet_score
+        for src_set_num in range(len(set_src_sents)):
+            list_comet_scores = calc_comet_qe(set_src_sents[src_set_num], sys_sents)
+            subset2scores['all']['comet-individual-' + str(src_set_num)] = list_comet_scores
+            subset2scores['all']['comet-ave-' + str(src_set_num)] = mean(list_comet_scores)
             
     # calculate comet-qe by partitioned data (for each phenomenon if annots provided)
     if annots is not None:
-        phen2data = partition_sents(src_sents[0], sys_sents, src_sents, annots)
+        phen2data = partition_sents(set_src_sents[0], sys_sents, set_src_sents, annots)
         for phen in phen2data:
-            if phen not in subset2scores:
-                subset2scores[phen] = {}
-                subset2scores[phen]['#sents'] = len(phen2data[phen]['src'])
-                # for each of the sets of src_sents
-                for s in range(len(src_sents)):
-                    # get the individual comet scores
-                    subset2scores[phen]['comet-individual-' + str(s)] = []
-                    for sent_idx in subset2scores[phen]['idx']:
-                        subset2scores[phen]['comet-individual-' + str(s)].append(subset2scores['all']['comet-individual-' + str(s)])
-                    # calculate the average
-                    subset2scores[phen]['comet-ave-' + str(s)] = mean(subset2scores[phen]['comet-individual-' + str(s)])
-                # for each sent index, get the best score out of each of the sets of src_sents
-                subset2scores[phen]['comet-individual-best'] = []
-                subset2scores[phen]['comet-individual-best-idx'] = []
-                for s in range(len(phen2data[phen]['src'])):
-                    all_scores = [(j, subset2scores[phen]['comet-individual-' + str(j)][s]) for j in range(len(src_sents))]
-                    idx, val = sorted(all_scores, lambda key=x: x[1], reverse=True)[0]
-                    subset2scores[phen]['comet-individual-best'].append(val)
-                    subset2scores[phen]['comet-individual-best-idx'].append(idx)
-                # get the average of best
-                subset2scores[phen]['comet-ave-best'] = mean(subset2scores[phen]['comet-individual-best'])
+            dict_init(subset2scores, phen, {})
+            subset2scores[phen]['#sents'] = len(phen2data[phen]['src'])
+            
+            # for each of the sets of set_src_sents
+            for src_set_num in range(len(set_src_sents)):
+                # get the individual comet scores
+                subset2scores[phen]['comet-individual-' + str(src_set_num)] = []
+                for sent_idx in phen2data[phen]['idx']:
+                    sent_score = subset2scores['all']['comet-individual-' + str(src_set_num)][sent_idx]
+                    subset2scores[phen]['comet-individual-' + str(src_set_num)].append(sent_score)
+                # calculate the average of that set of src sents
+                subset2scores[phen]['comet-ave-' + str(src_set_num)] = mean(subset2scores[phen]['comet-individual-' + str(src_set_num)])
+                
+            # for each sent index, get the best score out of each of the sets of set_src_sents
+            subset2scores[phen]['comet-individual-best'] = []
+            subset2scores[phen]['comet-individual-best-idx'] = []
+            for s, sent_idx in enumerate(phen2data[phen]['idx']):
+                # get scores for each of the sets of src sents and take the best score
+                all_scores = [(j, subset2scores[phen]['comet-individual-' + str(j)][s]) for j in range(len(set_src_sents))]
+                idx, val = sorted(all_scores, key=lambda x: x[1], reverse=True)[0]
+                subset2scores[phen]['comet-individual-best'].append(val)
+                subset2scores[phen]['comet-individual-best-idx'].append(idx)
+                
+            # get the average over all sentences for that phenomenon (average of best)
+            subset2scores[phen]['comet-ave-best'] = mean(subset2scores[phen]['comet-individual-best'])
                 
     if cache_file is not None:
         pickle.dump(subset2scores, open(cache_file, 'wb'))
@@ -154,68 +157,65 @@ def dict_init(dico, new_key, new_value={}):
     return 
 
 
-def calculate_all_refbased(src_sents, sys_sents, ref_sents, annots=None, comet_too=True,
+def calculate_all_refbased(src_sents, sys_sents, set_ref_sents, annots=None, comet_too=True,
                           cache_file=None, system_name='System'):
     subset2scores = {}
     if cache_file is not None and os.path.exists(cache_file):
         subset2scores = pickle.load(open(cache_file, 'rb'))
        
     dict_init(subset2scores, 'all', {})
-    # bleu scores on all sentences
+    # bleu score calculated for all sentences
     if 'bleu' not in subset2scores['all']:
         subset2scores['all']['#sents'] = len(sys_sents)
-        bleu_score = calc_bleu(sys_sents, ref_sents)
-        subset2scores['all']['bleu'] = bleu_score.score
+        subset2scores['all']['bleu'] = calc_bleu(sys_sents, set_ref_sents).score
         
-    # comet scores on all sentences
+    # individual comet scores (and their average) for all sentences
     if comet_too and 'comet' not in subset2scores['all']:
-       # for each set of reference sentences
-        for s in range(len(ref_sents)):
-            comet_scores = calc_comet(src_sents, sys_sents, ref_sents[s])
-            # scores for each sentence individually
-            subset2scores['all']['comet-individual-' + str(s)] = comet_scores
-            # average of those scores
-            ave_comet_score = sum(comet_scores)/len(comet_scores)
-            subset2scores['all']['comet-ave-' + str(s)] = ave_comet_score
-        # average of all sets of reference sentences
+        # for each set of reference sentences
+        for num_ref_set in range(len(set_ref_sents)):
+            comet_scores = calc_comet(src_sents, sys_sents, set_ref_sents[num_ref_set])
+            subset2scores['all']['comet-individual-' + str(num_ref_set)] = comet_scores
+            subset2scores['all']['comet-ave-' + str(num_ref_set)] = mean(comet_scores)
+            
+        # for each sentence calculate average of all scores for all sets of refs
         subset2scores['all']['comet-individual-ave'] = []
-        for s in range(len(ref_sents[0])):
-            all_ref_scores = [subset2scores['all']['comet-individual-' + str(r)][s] for r in range(len(ref_sents))]
-            subset2scores['all']['comet-individual-ave'].append(mean(all_ref_scores))
-        # average of this average
+        for sent_idx in range(len(sys_sents)):
+            all_scores = [subset2scores['all']['comet-individual-' + str(num_ref_set)][sent_idx] for num_ref_set in range(len(set_ref_sents))]
+            subset2scores['all']['comet-individual-ave'].append(mean(all_scores))
+        # average of these scores
         subset2scores['all']['comet-ave'] = mean(subset2scores['all']['comet-individual-ave'])
             
     # calculate bleu and comet by partitioned data (for each phenomenon if annots provided)
     if annots is not None:
-        phen2data = partition_sents(src_sents, sys_sents, ref_sents, annots)
+        phen2data = partition_sents(src_sents, sys_sents, set_ref_sents, annots)
         # individually for each phenomenon
         for phen in phen2data:
-            # calculate bleu on partition
+            # calculate bleu for this phenomenon
             bleu_score = calc_bleu(phen2data[phen]['sys'], phen2data[phen]['ref']).score
-            if phen not in subset2scores:
-                subset2scores[phen] = {}
-                if 'bleu' not in subset2scores[phen]:
-                    subset2scores[phen]['bleu'] = bleu_score
-                    subset2scores[phen]['#sents'] = len(phen2data[phen]['src'])
-                # get comet scores from individual scores calculated above (for the most common)
-                if 'comet' not in subset2scores[phen] and comet_too and subset2scores[phen]['#sents'] > THRESHOLD:
-                    # get scores (individual and average for each set of references)
-                    for r in range(len(ref_sents)):
-                        # get the individual comet scores for this phenomenon
-                        subset2scores[phen]['comet-individual-' + str(r)] = []
-                        for sent_idx in phen2data[phen]['idx']:
-                            sent_score = subset2scores['all']['comet-individual-' + str(r)][sent_idx]
-                            subset2scores[phen]['comet-individual-' + str(r)].append(sent_score)
-                        # calculate the average for this set of reference
-                        subset2scores[phen]['comet-ave-' + str(r)] = mean(subset2scores[phen]['comet-individual-' + str(r)])
-                    # get the average between the scores for all references
-                    subset2scores[phen]['comet-individual-ave'] = []
-                    # for each of the reference sentences
-                    for s in range(len(phen2data[phen]['ref'])):
-                        all_scores = [subset2scores[phen]['comet-individual-' + str(r)][s] for r in range(len(ref_sents))]
-                        subset2scores[phen]['comet-individual-ave'].append(mean(all_scores))
-                    # get the average over all sets of references
-                    subset2scores[phen]['comet-ave'] = mean(subset2scores[phen]['comet-individual-ave'])
+            dict_init(subset2scores, phen, {})
+            if 'bleu' not in subset2scores[phen]:
+                subset2scores[phen]['bleu'] = bleu_score
+                subset2scores[phen]['#sents'] = len(phen2data[phen]['src'])
+
+            # get comet scores from individual scores calculated above (for the most common)
+            if 'comet' not in subset2scores[phen] and comet_too and subset2scores[phen]['#sents'] > THRESHOLD:
+                # get each set of references, calculate individual scores and an average score
+                for num_ref_set in range(len(set_ref_sents)):
+                    subset2scores[phen]['comet-individual-' + str(num_ref_set)] = []
+                    for sent_idx in phen2data[phen]['idx']:
+                        sent_score = subset2scores['all']['comet-individual-' + str(num_ref_set)][sent_idx]
+                        subset2scores[phen]['comet-individual-' + str(num_ref_set)].append(sent_score)
+                    # calculate the average for this set of reference
+                    subset2scores[phen]['comet-ave-' + str(num_ref_set)] = mean(subset2scores[phen]['comet-individual-' + str(num_ref_set)])
+                    
+                # get the average between the scores for all references
+                subset2scores[phen]['comet-individual-ave'] = []
+                # for each of the reference sentences calculate the average over the ref sets
+                for s, sent_idx in enumerate(phen2data[phen]['idx']):
+                    all_scores = [subset2scores[phen]['comet-individual-' + str(num_ref_set)][s] for num_ref_set in range(len(set_ref_sents))]
+                    subset2scores[phen]['comet-individual-ave'].append(mean(all_scores))
+                # get the average over all sets of references
+                subset2scores[phen]['comet-ave'] = mean(subset2scores[phen]['comet-individual-ave'])
     if cache_file is not None:
         pickle.dump(subset2scores, open(cache_file, 'wb'))
     return subset2scores
