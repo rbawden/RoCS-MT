@@ -34,7 +34,7 @@ def process_hyp(lp, trg, raw_src_sents, norm_src_sents, sent_annots, raw_sys_sen
     #print('BLEU-NORM')
     print_row(subset2scores, 'bleu', system_name=system_name)
 
-  elif type_eval == 'bleu-norm':
+  elif type_eval == 'bleu-diff':
     subset2scores_nm = calculate_all_refbased(norm_src_sents, norm_sys_sents, ref_sents,
                                       sent_annots, cache_file=None, system_name=system_name, comet_too=False)
     subset2scores_rm = calculate_all_refbased(raw_src_sents, raw_sys_sents, ref_sents,
@@ -82,7 +82,7 @@ def process_hyp(lp, trg, raw_src_sents, norm_src_sents, sent_annots, raw_sys_sen
     cache_file = 'cache_results_wmt22-cometkiwi-da-norm/' + lp + '.' + system_name + '.pickle'
     subset2scores_nm = calculate_all([raw_src_sents, norm_src_sents], norm_sys_sents, ref_sents, calc_comet_qe,
                                        annots=sent_annots, cache_file=cache_file, system_name=system_name)
-    cache_file = 'cache_results_wmt22-cometkiwi-da-norm/' + lp + '.' + system_name + '.pickle'
+    cache_file = 'cache_results_wmt22-cometkiwi-da-raw/' + lp + '.' + system_name + '.pickle'
     subset2scores_rm = calculate_all([raw_src_sents, norm_src_sents], raw_sys_sents, ref_sents, calc_comet_qe,
                                        annots=sent_annots, cache_file=cache_file, system_name=system_name)
     print_row_diff(subset2scores_nm, subset2scores_rm, 'comet-ave-best', system_name=system_name)
@@ -101,14 +101,23 @@ type_eval = 'cometqe-norm'
 #type_eval = 'bleu-raw'
 #type_eval = 'bleu-diff'
 #type_eval = 'comet-diff'
-type_eval = 'cometqe-diff'
-  
+#type_eval = 'cometqe-diff'
+
+lps = ['en-cs', 'en-de', 'en-he', 'en-ja', 'en-ru', 'en-uk', 'en-zh']
+ref_lps = ['en-cs', 'en-de', 'en-ru', 'en-uk']
+systems = [# two lines unconstrained
+           'GPT4-5shot', 'ONLINE-A', 'ONLINE-B', 'ONLINE-G',  'ONLINE-M', 'ONLINE-W', 'ONLINE-Y',
+           'NLLB_MBR_BLEU', 'NLLB_Greedy', 'Lan-BridgeMT', 'GTCOM_Peter', 'KYB', 'PROMT', 'Yishu', 'ZengHuiMT',
+           # two lines constrained
+           'AIRC', 'ANVITA', 'CUNI-Transformer', 'CUNI-DocTransformer', 'CUNI-GA',
+           'HW-TSC', 'IOL_Research', 'NAIST-NICT', 'Samsung_Research_Philippines', 'SKIM', 'UvA-LTL']
+
 # all language pairs
-for lp in ['en-cs', 'en-de', 'en-ru', 'en-uk']:
+for lp in lps:
   print(r'\midrule')
   print(lp + r' \\')
   print(r'\midrule')
-  for sys_name in sys:
+  for sys_name in systems:
     # only proceed with compatible systems/lps
     hyp_file = '../sys/' + lp + '/' + sys_name + '.' + lp + '.txt'
     if not os.path.exists(hyp_file):
@@ -116,7 +125,8 @@ for lp in ['en-cs', 'en-de', 'en-ru', 'en-uk']:
     
     all_files = get_files(hyp_file, lp)
     # ignore for ref-based eval those language pairs with no reference file
-    if 'ref' in type_eval and all_files[0] not in ['en-cs', 'en-de', 'en-ru', 'en-uk']:
+    if 'qe' not in type_eval and lp not in ['en-cs', 'en-de', 'en-ru', 'en-uk']:
+      print('skipping')
       continue
     process_hyp(*all_files, system_name=hyp_file.split('/')[-1], type_eval=type_eval)
   
