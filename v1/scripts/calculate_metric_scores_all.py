@@ -44,39 +44,39 @@ def process_hyp(lp, trg, raw_src_sents, norm_src_sents, sent_annots, raw_sys_sen
     subset2scores = calculate_all(raw_src_sents, raw_sys_sents, ref_sents, calc_comet_several_refs,
                                              sent_annots, cache_file=cache_file, system_name=system_name)
     print('REF-BASED-RAW')
-    print_row(subset2scores, 'comet-ave', system_name=system_name)
+    print_row(subset2scores, 'comet-ave-best', system_name=system_name)
 
   elif type_eval == 'ref-norm':
     cache_file = 'cache_results_wmt22-comet-da-norm/' + lp + '.' + system_name + '.pickle'
     subset2scores = calculate_all(norm_src_sents, norm_sys_sents, ref_sents, calc_comet_several_refs,
                                              sent_annots, cache_file=cache_file, system_name=system_name)
     print('REF-BASED-NORM')
-    print_row(subset2scores, 'comet-ave', system_name=system_name)
+    print_row(subset2scores, 'comet-ave-best', system_name=system_name)
 
   elif type_eval == 'qe-raw':
     cache_file = 'cache_results_wmt22-cometkiwi-da-raw/' + lp + '.' + system_name + '.pickle'
     subset2scores = calculate_all([raw_src_sents, norm_src_sents], raw_sys_sents, ref_sents, calc_comet_qe,
                                        annots=sent_annots, cache_file=cache_file, system_name=system_name)
     print('QE-BASED-RAW')
-    print_row(subset2scores, 'comet-ave', system_name=system_name)
+    print_row(subset2scores, 'comet-ave-best', system_name=system_name)
 
   elif type_eval == 'qe-norm':
     cache_file = 'cache_results_wmt22-cometkiwi-da-norm/' + lp + '.' + system_name + '.pickle'
     subset2scores = calculate_all([raw_src_sents, norm_src_sents], norm_sys_sents, ref_sents, calc_comet_qe,
                                        annots=sent_annots, cache_file=cache_file, system_name=system_name)
     print('QE-BASE-NORM')
-    print_row(subset2scores, 'comet-ave', system_name=system_name)
+    print_row(subset2scores, 'comet-ave-best', system_name=system_name)
 
 # all systems (ordered by logical order)
 sys = ['GPT4-5shot', 'ONLINE-B', 'ONLINE-G',  'ONLINE-M', 'ONLINE-W', 'ONLINE-Y',
        'NLLB_MBR_BLEU', 'NLLB_Greedy', 'Lan-BridgeMT', 'ZengHuiMT', 'GTCOM_Peter',
        'AIRC', 'CUNI-DocTransformer', 'PROMT']
 
-#type_eval = 'qe-norm'
-type_eval = 'qe-raw'
+type_eval = 'qe-norm'
+#type_eval = 'qe-raw'
 #type_eval = 'ref-norm'
 #type_eval = 'ref-raw'
-type_eval = 'bleu-norm'
+#type_eval = 'bleu-norm'
 #type_eval = 'bleu-raw'
   
 # all language pairs

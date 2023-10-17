@@ -260,6 +260,7 @@ def print_row(subset2scores, metric, system_name='System'):
     prec = 1
     if 'comet' in metric:
         prec = 3
+    #import pdb; pdb.set_trace()
     prep_system_name = re.sub('\.en-..\.txt', '', system_name.replace('_', '\_'))
     print(prep_system_name + ' & '+ ' & '.join([prep_v(subset2scores[phen][metric],  prec) for phen in phens] +
                                                    [prep_v(subset2scores['all'][metric], prec)]) + r' \\')
