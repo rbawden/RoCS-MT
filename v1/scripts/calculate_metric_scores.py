@@ -133,6 +133,7 @@ def calculate_all(set_src_sents, sys_sents, ref_sents, comet_func, annots=None, 
             list_comet_scores = comet_func(set_src_sents[src_set_num], sys_sents, ref_sents)
             subset2scores['all']['comet-individual-' + str(src_set_num)] = list_comet_scores
             subset2scores['all']['comet-ave-' + str(src_set_num)] = mean(list_comet_scores)
+        subset2scores['all']['comet-ave-best'] = mean([subset2scores['all']['comet-ave-' + str(r) for r in range(len(set_src_sents))])
             
     # calculate comet-qe by partitioned data (for each phenomenon if annots provided)
     if annots is not None:
@@ -196,6 +197,7 @@ def calculate_all_refbased(src_sents, sys_sents, set_ref_sents, annots=None, com
             comet_scores = calc_comet(src_sents, sys_sents, set_ref_sents[num_ref_set])
             subset2scores['all']['comet-individual-' + str(num_ref_set)] = comet_scores
             subset2scores['all']['comet-ave-' + str(num_ref_set)] = mean(comet_scores)
+        
             
         # for each sentence calculate average of all scores for all sets of refs
         subset2scores['all']['comet-individual-ave'] = []
@@ -260,7 +262,7 @@ def print_row(subset2scores, metric, system_name='System'):
     prec = 1
     if 'comet' in metric:
         prec = 3
-    #import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
     prep_system_name = re.sub('\.en-..\.txt', '', system_name.replace('_', '\_'))
     print(prep_system_name + ' & '+ ' & '.join([prep_v(subset2scores[phen][metric],  prec) for phen in phens] +
                                                    [prep_v(subset2scores['all'][metric], prec)]) + r' \\')
