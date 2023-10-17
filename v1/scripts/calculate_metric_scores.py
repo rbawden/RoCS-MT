@@ -6,11 +6,11 @@ from read_files import read_annots_file
 import pickle
 import torch
 import os
-comet_model_path = download_model("Unbabel/wmt22-comet-da")
-#comet_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-comet-da/snapshots/371e9839ca4e213dde891b066cf3080f75ec7e72/checkpoints/model.ckpt'
+#comet_model_path = download_model("Unbabel/wmt22-comet-da")
+comet_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-comet-da/snapshots/371e9839ca4e213dde891b066cf3080f75ec7e72/checkpoints/model.ckpt'
 comet_model = load_from_checkpoint(comet_model_path)
-comet_qe_model_path = download_model("Unbabel/wmt22-cometkiwi-da")
-#comet_qe_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-cometkiwi-da/snapshots/b3a8aea5a5fc22db68a554b92b3d96eb6ea75cc9/checkpoints/model.ckpt'
+#comet_qe_model_path = download_model("Unbabel/wmt22-cometkiwi-da")
+comet_qe_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-cometkiwi-da/snapshots/b3a8aea5a5fc22db68a554b92b3d96eb6ea75cc9/checkpoints/model.ckpt'
 comet_qe_model = load_from_checkpoint(comet_qe_model_path)
 bleu = BLEU()
 
@@ -79,7 +79,7 @@ def calc_comet_several_refs(src_sents, sys_sents, ref_sents):
     scores = []
     for refset in ref_sents:
         data = [{"src": src_sent, "mt": sys_sent, "ref": ref_sent} \
-                    for src_sent, sys_sent, ref_sent in zip(src_sents, sys_sents, ref_sents)]
+                    for src_sent, sys_sent, ref_sent in zip(src_sents, sys_sents, refset)]
         if torch.cuda.is_available():
             ref_set_scores = comet_model.predict(data, batch_size=32).scores
         else:
@@ -88,7 +88,7 @@ def calc_comet_several_refs(src_sents, sys_sents, ref_sents):
     ave_scores = []
     # average for each sentence
     for s in range(len(ref_sents[0])):
-        ave_scores.append([scores[r][s] for r in range(len(ref_sents))])
+        ave_scores.append(mean([scores[r][s] for r in range(len(ref_sents))]))
     return ave_scores
 
     
@@ -262,6 +262,9 @@ def print_row(subset2scores, metric, system_name='System'):
     prec = 1
     if 'comet' in metric:
         prec = 3
+    print(metric)
+    print(subset2scores['all'].keys())
+    print(subset2scores['contraction'].keys())
     prep_system_name = re.sub('\.en-..\.txt', '', system_name.replace('_', '\_'))
     print(prep_system_name + ' & '+ ' & '.join([prep_v(subset2scores[phen][metric],  prec) for phen in phens] +
                                                    [prep_v(subset2scores['all'][metric], prec)]) + r' \\')
