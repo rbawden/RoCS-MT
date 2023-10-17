@@ -51,7 +51,7 @@ def calc_bleu(sys_sents, ref_sents):
     
     return bleu.corpus_score(sys_sents, ref_sents)
 
-def calc_comet_qe(src_sents, sys_sents):
+def calc_comet_qe(src_sents, sys_sents, ref_sents):
     #print(len(src_sents), len(sys_sents))
     assert len(src_sents) == len(sys_sents)
     
@@ -73,7 +73,25 @@ def calc_comet(src_sents, sys_sents, ref_sents):
     else:
         return comet_model.predict(data, batch_size=32, gpus=0).scores
 
+def calc_comet_several_refs(src_sents, sys_sents, ref_sents):
+    assert len(src_sents) == len(sys_sents)
+    assert all(len(r) == len(sys_sents) for r in ref_sents)
+    scores = []
+    for refset in ref_sents:
+        data = [{"src": src_sent, "mt": sys_sent, "ref": ref_sent} \
+                    for src_sent, sys_sent, ref_sent in zip(src_sents, sys_sents, ref_sents)]
+        if torch.cuda.is_available():
+            ref_set_scores = comet_model.predict(data, batch_size=32).scores
+        else:
+            ref_set_scores = comet_model.predict(data, batch_size=32, gpus=0).scores
+        scores.append(ref_set_scores)
+    ave_scores = []
+    # average for each sentence
+    for s in range(len(ref_sents[0])):
+        ave_scores.append([scores[r][s] for r in range(len(ref_sents))])
+    return ave_scores
 
+    
 def partition_sents(src_sents, sys_sents, ref_sents, annots):
     phen2data = {}
     assert len(src_sents) == len(sys_sents) == len(annots)
@@ -97,7 +115,7 @@ def mean(list_values):
     return sum(list_values)/len(list_values)
 
     
-def calculate_all_qe(set_src_sents, sys_sents, annots=None, cache_file=None, system_name='System'):
+def calculate_all(set_src_sents, sys_sents, ref_sents, comet_func, annots=None, cache_file=None, system_name='System'):
     '''
     src_sents is a list of sets of src_sents (like ref_sents for calculate_all_refbased). Each list
     should have the same number of sentences.
@@ -112,7 +130,7 @@ def calculate_all_qe(set_src_sents, sys_sents, annots=None, cache_file=None, sys
     if 'comet-individual-0' not in subset2scores['all']:
         subset2scores['all']['#sents'] = len(sys_sents)
         for src_set_num in range(len(set_src_sents)):
-            list_comet_scores = calc_comet_qe(set_src_sents[src_set_num], sys_sents)
+            list_comet_scores = comet_func(set_src_sents[src_set_num], sys_sents, ref_sents)
             subset2scores['all']['comet-individual-' + str(src_set_num)] = list_comet_scores
             subset2scores['all']['comet-ave-' + str(src_set_num)] = mean(list_comet_scores)
             
@@ -228,24 +246,26 @@ def calculate_all_refbased(src_sents, sys_sents, set_ref_sents, annots=None, com
 def prep_v(value_to_prep, round_val=1):
     return r'\gradient{' + str(round(value_to_prep, round_val)) + '}'
 
-def print_row(subset2scores, system_name='System'):
+def print_row(subset2scores, metric, system_name='System'):
     phens = [x for x in sorted(subset2scores.keys()) if x != 'all' and subset2scores[x]['#sents'] > THRESHOLD]
     # print headers
     #print('System' + ' & ' * int(len(phens) > 0) + ' & '.join([x.replace('_', '\_') for x in phens]) + r' & all \\')
     # print values for this system
-    for metric in subset2scores['all']:
-        if metric not in ['bleu', 'comet']:
-            continue
-        prec = 1
-        if metric == 'comet':
-            prec = 3
-        prep_system_name = re.sub('\.en-..\.txt', '', system_name.replace('_', '\_'))
-        print('*' + metric + '* ' + prep_system_name + ' & '+ ' & '.join([prep_v(subset2scores[phen][metric],  prec) for phen in phens] +
-                                                                         [prep_v(subset2scores['all'][metric], prec)]) + r' \\')
+    #for metric in subset2scores['all']:
+    #    if metric not in ['bleu', 'comet']:
+    #        continue
+    #    prec = 1
+    #    if metric == 'comet':
+    #        prec = 3
+    prec = 1
+    if 'comet' in metric:
+        prec = 3
+    prep_system_name = re.sub('\.en-..\.txt', '', system_name.replace('_', '\_'))
+    print(prep_system_name + ' & '+ ' & '.join([prep_v(subset2scores[phen][metric],  prec) for phen in phens] +
+                                                   [prep_v(subset2scores['all'][metric], prec)]) + r' \\')
 
     # print number of sentences -> check that this is the same for each system
-    print('#sents & ' + ' & '.join([str(subset2scores[phen]['#sents']) for phen in phens] +
-                                   [str(subset2scores['all']['#sents'])]) + r' \\')
+    #print('#sents & ' + ' & '.join([str(subset2scores[phen]['#sents']) for phen in phens] + [str(subset2scores['all']['#sents'])]) + r' \\')
 
 
 if __name__ == '__main__':

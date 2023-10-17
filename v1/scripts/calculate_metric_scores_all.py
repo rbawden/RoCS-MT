@@ -27,33 +27,45 @@ def process_hyp(lp, trg, raw_src_sents, norm_src_sents, sent_annots, raw_sys_sen
   #ref_sents = [ref_sents[r][:100] for r in range(len(ref_sents))]
   #ref_sents = [ref_sents[0], [x[:-1] for x in ref_sents[0]]]
 
-  if type_eval == 'ref-raw':
+  if type_eval == 'bleu-raw':
+    subset2scores = calculate_all_refbased(raw_src_sents, raw_sys_sents, ref_sents, 
+                                      sent_annots, cache_file=None, system_name=system_name, comet_too=False)
+    #print('BLEU-RAW')
+    print_row(subset2scores, 'bleu', system_name=system_name)
+
+  if type_eval == 'bleu-norm':
+    subset2scores = calculate_all_refbased(norm_src_sents, norm_sys_sents, ref_sents,
+                                      sent_annots, cache_file=None, system_name=system_name, comet_too=False)
+    #print('BLEU-NORM')
+    print_row(subset2scores, 'bleu', system_name=system_name)
+  
+  elif type_eval == 'ref-raw':
     cache_file = 'cache_results_wmt22-comet-da-raw/' + lp + '.' + system_name + '.pickle'
-    subset2scores = calculate_all_refbased(raw_src_sents, raw_sys_sents, ref_sents, sent_annots,
-                  cache_file=cache_file, system_name=system_name)
+    subset2scores = calculate_all(raw_src_sents, raw_sys_sents, ref_sents, calc_comet_several_refs,
+                                             sent_annots, cache_file=cache_file, system_name=system_name)
     print('REF-BASED-RAW')
-    print_row(subset2scores, system_name=system_name)
+    print_row(subset2scores, 'comet-ave', system_name=system_name)
 
-  if type_eval == 'ref-norm':
+  elif type_eval == 'ref-norm':
     cache_file = 'cache_results_wmt22-comet-da-norm/' + lp + '.' + system_name + '.pickle'
-    subset2scores = calculate_all_refbased(norm_src_sents, norm_sys_sents, ref_sents, sent_annots,
-                  cache_file=cache_file, system_name=system_name)
+    subset2scores = calculate_all(norm_src_sents, norm_sys_sents, ref_sents, calc_comet_several_refs,
+                                             sent_annots, cache_file=cache_file, system_name=system_name)
     print('REF-BASED-NORM')
-    print_row(subset2scores, system_name=system_name)
+    print_row(subset2scores, 'comet-ave', system_name=system_name)
 
-  if type_eval == 'qe-raw':
+  elif type_eval == 'qe-raw':
     cache_file = 'cache_results_wmt22-cometkiwi-da-raw/' + lp + '.' + system_name + '.pickle'
-    calculate_all_qe([raw_src_sents, norm_src_sents], raw_sys_sents, annots=sent_annots, cache_file=cache_file,
-                      system_name=system_name)
+    subset2scores = calculate_all([raw_src_sents, norm_src_sents], raw_sys_sents, ref_sents, calc_comet_qe,
+                                       annots=sent_annots, cache_file=cache_file, system_name=system_name)
     print('QE-BASED-RAW')
-    print_row(subset2scores, system_name=system_name)
+    print_row(subset2scores, 'comet-ave', system_name=system_name)
 
-  if type_eval == 'qe-norm':
+  elif type_eval == 'qe-norm':
     cache_file = 'cache_results_wmt22-cometkiwi-da-norm/' + lp + '.' + system_name + '.pickle'
-    calculate_all_qe([raw_src_sents, norm_src_sents], norm_sys_sents, annots=sent_annots, cache_file=cache_file,
-                      system_name=system_name)
+    subset2scores = calculate_all([raw_src_sents, norm_src_sents], norm_sys_sents, ref_sents, calc_comet_qe,
+                                       annots=sent_annots, cache_file=cache_file, system_name=system_name)
     print('QE-BASE-NORM')
-    print_row(subset2scores, system_name=system_name)
+    print_row(subset2scores, 'comet-ave', system_name=system_name)
 
 # all systems (ordered by logical order)
 sys = ['GPT4-5shot', 'ONLINE-B', 'ONLINE-G',  'ONLINE-M', 'ONLINE-W', 'ONLINE-Y',
@@ -61,9 +73,11 @@ sys = ['GPT4-5shot', 'ONLINE-B', 'ONLINE-G',  'ONLINE-M', 'ONLINE-W', 'ONLINE-Y'
        'AIRC', 'CUNI-DocTransformer', 'PROMT']
 
 #type_eval = 'qe-norm'
-#type_eval = 'qe-raw'
+type_eval = 'qe-raw'
 #type_eval = 'ref-norm'
-type_eval = 'ref-raw'
+#type_eval = 'ref-raw'
+type_eval = 'bleu-norm'
+#type_eval = 'bleu-raw'
   
 # all language pairs
 for lp in ['en-cs', 'en-de', 'en-ru', 'en-uk']:
@@ -80,6 +94,5 @@ for lp in ['en-cs', 'en-de', 'en-ru', 'en-uk']:
     # ignore for ref-based eval those language pairs with no reference file
     if 'ref' in type_eval and all_files[0] not in ['en-cs', 'en-de', 'en-ru', 'en-uk']:
       continue
-    print(hyp_file)
     process_hyp(*all_files, system_name=hyp_file.split('/')[-1], type_eval=type_eval)
   
