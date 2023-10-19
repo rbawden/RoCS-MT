@@ -6,11 +6,11 @@ from read_files import read_annots_file
 import pickle
 import torch
 import os
-#comet_model_path = download_model("Unbabel/wmt22-comet-da")
-comet_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-comet-da/snapshots/371e9839ca4e213dde891b066cf3080f75ec7e72/checkpoints/model.ckpt'
+comet_model_path = download_model("Unbabel/wmt22-comet-da")
+#comet_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-comet-da/snapshots/371e9839ca4e213dde891b066cf3080f75ec7e72/checkpoints/model.ckpt'
 comet_model = load_from_checkpoint(comet_model_path)
-#comet_qe_model_path = download_model("Unbabel/wmt22-cometkiwi-da")
-comet_qe_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-cometkiwi-da/snapshots/b3a8aea5a5fc22db68a554b92b3d96eb6ea75cc9/checkpoints/model.ckpt'
+comet_qe_model_path = download_model("Unbabel/wmt22-cometkiwi-da")
+#comet_qe_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-cometkiwi-da/snapshots/b3a8aea5a5fc22db68a554b92b3d96eb6ea75cc9/checkpoints/model.ckpt'
 comet_qe_model = load_from_checkpoint(comet_qe_model_path)
 bleu = BLEU()
 
@@ -115,7 +115,7 @@ def mean(list_values):
     return sum(list_values)/len(list_values)
 
     
-def calculate_all(set_src_sents, sys_sents, ref_sents, comet_func, annots=None, cache_file=None, system_name='System'):
+def calculate_all_comet(set_src_sents, sys_sents, ref_sents, comet_func, annots=None, cache_file=None, system_name='System'):
     '''
     src_sents is a list of sets of src_sents (like ref_sents for calculate_all_refbased). Each list
     should have the same number of sentences.
@@ -130,39 +130,67 @@ def calculate_all(set_src_sents, sys_sents, ref_sents, comet_func, annots=None, 
     if 'comet-individual-0' not in subset2scores['all']:
         subset2scores['all']['#sents'] = len(sys_sents)
         for src_set_num in range(len(set_src_sents)):
-            list_comet_scores = comet_func(set_src_sents[src_set_num], sys_sents, ref_sents)
-            subset2scores['all']['comet-individual-' + str(src_set_num)] = list_comet_scores
-            subset2scores['all']['comet-ave-' + str(src_set_num)] = mean(list_comet_scores)
-        subset2scores['all']['comet-ave-best'] = mean([subset2scores['all']['comet-ave-' + str(r)] for r in range(len(set_src_sents))])
+            for ref_set_num in range(len(ref_sents)):
+                list_comet_scores = comet_func(set_src_sents[src_set_num], sys_sents, ref_sents)
+                # sentence-level scores for that src set and ref set
+                subset2scores['all']['comet-individual-' + str(src_set_num) + '-' + str(ref_set_num)] = list_comet_scores
+                # corpus average for that src_set and ref_set
+                subset2scores['all']['comet-ave-' + str(src_set_num) + '-' + str(ref_set_num)] = mean(list_comet_scores)
+
+        subset2scores['all']['comet-individual-best'] = []
+        subset2scores['all']['comet-individual-best-idx'] = []
+        # get average and best for each sent
+        for sent_idx in range(len(sys_sents)):
+            # get all scores for this sentence for all combinations of src and refs sets
+            all_scores = [((j, k), subset2scores['all']['comet-individual-' + str(j) + '-' + str(k)][sent_idx]) \
+                              for j in range(len(set_src_sents)) for k in range(len(ref_sents))]
+            # get best score for this sentence
+            idx, val = sorted(all_scores, key=lambda x: x[1], reverse=True)[0]
+            subset2scores['all']['comet-individual-best'].append(val)
+            subset2scores['all']['comet-individual-best-idx'].append(idx)
+            # get average score for this sentence
+            subset2scores['all']['comet-individual-ave'].append(mean([x[1] for x in all_scores]))
+        # get the corpus average over best individual sent scores
+        subset2scores['all']['comet-ave-best'] = mean([subset2scores['all']['comet-individual-best'][s] for s in range(len(sys_sents))])
+        # get theh corpus average over average indvidual sent scores
+        subset2scores['all']['comet-ave-ave'] = mean([subset2scores['all']['comet-individual-ave'][s] for s in range(len(set_src_sents))])
             
-    # calculate comet-qe by partitioned data (for each phenomenon if annots provided)
+    # calculate comet by partitioned data (for each phenomenon if annots provided)
     if annots is not None:
         phen2data = partition_sents(set_src_sents[0], sys_sents, set_src_sents, annots)
         for phen in phen2data:
             dict_init(subset2scores, phen, {})
             subset2scores[phen]['#sents'] = len(phen2data[phen]['src'])
-            
-            # for each of the sets of set_src_sents
+
+            # get average and best scores for each individaul sentence
             for src_set_num in range(len(set_src_sents)):
-                # get the individual comet scores
-                subset2scores[phen]['comet-individual-' + str(src_set_num)] = []
-                for sent_idx in phen2data[phen]['idx']:
-                    sent_score = subset2scores['all']['comet-individual-' + str(src_set_num)][sent_idx]
-                    subset2scores[phen]['comet-individual-' + str(src_set_num)].append(sent_score)
-                # calculate the average of that set of src sents
-                subset2scores[phen]['comet-ave-' + str(src_set_num)] = mean(subset2scores[phen]['comet-individual-' + str(src_set_num)])
-                
-            # for each sent index, get the best score out of each of the sets of set_src_sents
+                for ref_set_num in range(len(ref_sents)):
+                    # get individual comet scores for this src and ref set for this particular phenomenon
+                    subset2scores[phen]['comet-individual-' + str(src_set_num) + '-' + str(ref_set_num)] = []
+                    for sent_idx in phen2data[phen]['idx']:
+                        sent_score = subset2scores['all']['comet-individual-' + str(src_set_num) + '-' + str(ref_set_num)][sent_idx]
+                        subset2scores[phen]['comet-individual-' + str(src_set_num) + '-' + str(ref_set_num)].append(sent_score)
+                    # calculate the corpus average for this set of src_set and ref_set for this particular phenomenon
+                    subset2scores[phen]['comet-ave-' + str(src_set_num) + '-' + str(ref_set_num)] = \
+                      mean(subset2scores[phen]['comet-individual-' + str(src_set_num) + '-' + str(ref_set_num)])
+
+            # for each sent, get the ave and best score over src and ref sets
+            subset2scores[phen]['comet-individual-ave'] = []
             subset2scores[phen]['comet-individual-best'] = []
             subset2scores[phen]['comet-individual-best-idx'] = []
             for s, sent_idx in enumerate(phen2data[phen]['idx']):
-                # get scores for each of the sets of src sents and take the best score
-                all_scores = [(j, subset2scores[phen]['comet-individual-' + str(j)][s]) for j in range(len(set_src_sents))]
+                # get scores for each of the src andn ref sets
+                all_scores = [((j,k), subset2scores[phen]['comet-individual-' + str(j) + '-' + str(k)][s]) for j in range(len(set_src_sents)) for k in range(len(ref_sents))]
                 idx, val = sorted(all_scores, key=lambda x: x[1], reverse=True)[0]
+                # get the best score for each sentence
                 subset2scores[phen]['comet-individual-best'].append(val)
                 subset2scores[phen]['comet-individual-best-idx'].append(idx)
+                # get average score for this sent
+                subset2scores[phen]['comet-individual-ave'] = [mean([x[1] for x in all_scores])]
                 
-            # get the average over all sentences for that phenomenon (average of best)
+            # get the average over all sentence-level average scores
+            subset2scores[phen]['comet-ave-ave'] = mean(subset2scores[phen]['comet-individual-ave'])
+            # get the average over all sentence-level best scores
             subset2scores[phen]['comet-ave-best'] = mean(subset2scores[phen]['comet-individual-best'])
                 
     if cache_file is not None:
@@ -175,8 +203,8 @@ def dict_init(dico, new_key, new_value={}):
         dico[new_key] = new_value
     return 
 
-
-def calculate_all_refbased(src_sents, sys_sents, set_ref_sents, annots=None, comet_too=True,
+# only use for BLEU!
+def calculate_all_bleu(src_sents, sys_sents, set_ref_sents, annots=None, comet_too=False,
                           cache_file=None, system_name='System'):
     
     if cache_file is not None and os.path.exists(cache_file):
@@ -246,25 +274,18 @@ def calculate_all_refbased(src_sents, sys_sents, set_ref_sents, annots=None, com
 
 
 def prep_v(value_to_prep, round_val=1):
-    return r'\gradient{' + str(round(value_to_prep, round_val)) + '}'
+    if round_val == 1:
+        return r'\gradient{' + f"{value_to_prep:.{round_val}f}" + '}'
+    else:
+        return r'\cometgradient{' + f"{value_to_prep:.{round_val}f}" + '}'
 
 def print_row(subset2scores, metric, system_name='System'):
     phens = [x for x in sorted(subset2scores.keys()) if x != 'all' and subset2scores[x]['#sents'] > THRESHOLD]
     # print headers
     #print('System' + ' & ' * int(len(phens) > 0) + ' & '.join([x.replace('_', '\_') for x in phens]) + r' & all \\')
-    # print values for this system
-    #for metric in subset2scores['all']:
-    #    if metric not in ['bleu', 'comet']:
-    #        continue
-    #    prec = 1
-    #    if metric == 'comet':
-    #        prec = 3
     prec = 1
     if 'comet' in metric:
         prec = 3
-    print(metric)
-    print(subset2scores['all'].keys())
-    print(subset2scores['contraction'].keys())
     prep_system_name = re.sub('\.en-..\.txt', '', system_name.replace('_', '\_'))
     print(prep_system_name + ' & '+ ' & '.join([prep_v(subset2scores[phen][metric],  prec) for phen in phens] +
                                                    [prep_v(subset2scores['all'][metric], prec)]) + r' \\')
@@ -273,16 +294,9 @@ def print_row(subset2scores, metric, system_name='System'):
     #print('#sents & ' + ' & '.join([str(subset2scores[phen]['#sents']) for phen in phens] + [str(subset2scores['all']['#sents'])]) + r' \\')
 
 def print_row_diff(subset2scores1, subset2scores2, metric, system_name='System'):
-    phens = [x for x in sorted(subset2scores.keys()) if x != 'all' and subset2scores[x]['#sents'] > THRESHOLD]
+    phens = [x for x in sorted(subset2scores2.keys()) if x != 'all' and subset2scores2[x]['#sents'] > THRESHOLD]
     # print headers
     #print('System' + ' & ' * int(len(phens) > 0) + ' & '.join([x.replace('_', '\_') for x in phens]) + r' & all \\')
-    # print values for this system
-    #for metric in subset2scores['all']:
-    #    if metric not in ['bleu', 'comet']:
-    #        continue
-    #    prec = 1
-    #    if metric == 'comet':
-    #        prec = 3
     prec = 1
     if 'comet' in metric:
         prec = 3
