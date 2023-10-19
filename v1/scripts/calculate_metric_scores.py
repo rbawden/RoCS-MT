@@ -6,11 +6,11 @@ from read_files import read_annots_file
 import pickle
 import torch
 import os
-comet_model_path = download_model("Unbabel/wmt22-comet-da")
-#comet_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-comet-da/snapshots/371e9839ca4e213dde891b066cf3080f75ec7e72/checkpoints/model.ckpt'
+#comet_model_path = download_model("Unbabel/wmt22-comet-da")
+comet_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-comet-da/snapshots/371e9839ca4e213dde891b066cf3080f75ec7e72/checkpoints/model.ckpt'
 comet_model = load_from_checkpoint(comet_model_path)
-comet_qe_model_path = download_model("Unbabel/wmt22-cometkiwi-da")
-#comet_qe_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-cometkiwi-da/snapshots/b3a8aea5a5fc22db68a554b92b3d96eb6ea75cc9/checkpoints/model.ckpt'
+#comet_qe_model_path = download_model("Unbabel/wmt22-cometkiwi-da")
+comet_qe_model_path = '../../../../../../../../linkhome/rech/genini01/ulv12mq/.cache/huggingface/hub/models--Unbabel--wmt22-cometkiwi-da/snapshots/b3a8aea5a5fc22db68a554b92b3d96eb6ea75cc9/checkpoints/model.ckpt'
 comet_qe_model = load_from_checkpoint(comet_qe_model_path)
 bleu = BLEU()
 
@@ -139,6 +139,7 @@ def calculate_all_comet(set_src_sents, sys_sents, ref_sents, comet_func, annots=
 
         subset2scores['all']['comet-individual-best'] = []
         subset2scores['all']['comet-individual-best-idx'] = []
+        subset2scores['all']['comet-individual-ave'] = []
         # get average and best for each sent
         for sent_idx in range(len(sys_sents)):
             # get all scores for this sentence for all combinations of src and refs sets
