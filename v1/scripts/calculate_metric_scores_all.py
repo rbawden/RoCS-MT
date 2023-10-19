@@ -12,7 +12,7 @@ def get_files(hyp_file, lp):
   raw_sys_sents = [x for i, x in enumerate(sys_sents) if 'rm' in sys_sent_docs[i]]
   norm_sys_sents = [x for i, x in enumerate(sys_sents) if 'nm' in sys_sent_docs[i]]
   if not os.path.exists('../ref/RoCS-MT.ref.' + trg):
-    ref_sents = None
+    ref_sents = [None]
   else:
     ref_sents = read_file('../ref/RoCS-MT.ref.' + trg, ref=True)
 
@@ -68,14 +68,14 @@ def process_hyp(lp, trg, raw_src_sents, norm_src_sents, sent_annots, raw_sys_sen
     cache_file = 'cache_results_wmt22-cometkiwi-da-raw/' + lp + '.' + system_name + '.pickle'
     subset2scores = calculate_all_comet([raw_src_sents, norm_src_sents], raw_sys_sents, ref_sents, calc_comet_qe,
                                        annots=sent_annots, cache_file=cache_file, system_name=system_name)
-    #print('QE-BASED-RAW')
+    print('QE-BASED-RAW')
     print_row(subset2scores, 'comet-ave-best', system_name=system_name)
 
   elif type_eval == 'cometqe-norm':
     cache_file = 'cache_results_wmt22-cometkiwi-da-norm/' + lp + '.' + system_name + '.pickle'
     subset2scores = calculate_all_comet([raw_src_sents, norm_src_sents], norm_sys_sents, ref_sents, calc_comet_qe,
                                        annots=sent_annots, cache_file=cache_file, system_name=system_name)
-    #print('QE-BASE-NORM')
+    print('QE-BASE-NORM')
     print_row(subset2scores, 'comet-ave-best', system_name=system_name)
 
   elif type_eval == 'cometqe-diff':
