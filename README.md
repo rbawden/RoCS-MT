@@ -20,7 +20,7 @@ Rachel Bawden and Benoît Sagot. 2023. [RoCS-MT: Robustness Challenge Set for Ma
     author = "Bawden, Rachel  and
       Sagot, Beno{\^\i}t",
     editor = "Koehn, Philipp  and
-      Haddon, Barry  and
+      Haddow, Barry  and
       Kocmi, Tom  and
       Monz, Christof",
     booktitle = "Proceedings of the Eighth Conference on Machine Translation",
