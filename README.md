@@ -2,7 +2,7 @@
 
 <img align="right" width="220" src="https://github.com/rbawden/RoCS-MT/blob/d1913e9534035772d3cae54d460bda65494643ba/img/rocs-mt-logo.png">
 
-RoCS-MT, a Robust Challenge Set for Machine Translation (MT), is designed to test MT systems’ ability to translate user-generated content (UGC) that displays non-standard characteristics, such as spelling errors, devowelling, acronymisation, etc. RoCS-MT is composed of English comments from Reddit, selected for their non-standard nature, which have been manually normalised and professionally translated into five languages: French, German, Czech, Ukrainian and Russian. The challenge set was included as a test suite at WMT 2O23. This repository therefore also includes automatic translations from the submissions to the general MT task. 
+RoCS-MT, a Robust Challenge Set for Machine Translation (MT), is designed to test MT systems’ ability to translate user-generated content (UGC) that displays non-standard characteristics, such as spelling errors, devowelling, acronymisation, etc. RoCS-MT is composed of English comments from Reddit, selected for their non-standard nature, which have been manually normalised and professionally translated into five languages: French, German, Czech, Ukrainian and Russian. The challenge set was included as a test suite at WMT 2023. This repository therefore also includes automatic translations from the submissions to the general MT task. 
 
 ## News
 
