@@ -36,6 +36,8 @@ Rachel Bawden and Benoît Sagot. 2023. [RoCS-MT: Robustness Challenge Set for Ma
 
 ## Description of files
 
+Each version of the challenge set (only v1 published for now) contains the following files:
+
 ### Source files (raw + normalised versions)
 The source texts are available in several versions, depending on the sentence segmentation (manual or with spaCy) and on whether the sentences are in their raw or normalised version:
 - manual sentence segmentation, raw text: `src/RoCS-MT.src.raw-manseg.en`
@@ -46,7 +48,7 @@ The source texts are available in several versions, depending on the sentence se
 `.tsv` versions of the files are available in the same directory, indicating the document ids of each sentence.
 
 ### Reference files
-The manually segmented, normalised texts were translated by professional translators into French, German, Czech, Ukrainian and Russian. They can be found in `ref/en-{fr,de,cs,uk,ru}`.
+The manually segmented, normalised texts were translated by professional translators into French, German, Czech, Ukrainian and Russian. They can be found in `ref/en-{fr,de,cs,uk,ru}`. We additionally include manual annotations of normalisation phenomena in `ref/RoCS-annotated.tsv`.
 
 N.B. Some postedition still needs to be done for some of the translators due to variants being included (for gender variation).
 
@@ -55,4 +57,4 @@ The `sys/` folder contains system outputs from the 2023 general MT task. They co
 
 ### Guidelines
 
-We include the first version of the guidelines for both normalisation and translation. Both guides, in particular the one for normalisation, is likely to evolve in future releases.
+We include the first version of the guidelines for both normalisation and translation in `guidelines`. Both guides, in particular the one for normalisation, is likely to evolve in future releases.
