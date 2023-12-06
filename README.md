@@ -1,8 +1,38 @@
 # RoCS-MT (Robust Challenge Set for Machine Translation)
 
+RoCS-MT, a Robust Challenge Set for Machine Translation (MT), is designed to test MT systems’ ability to translate user-generated content (UGC) that displays non-standard characteristics, such as spelling errors, devowelling, acronymisation, etc. RoCS-MT is composed of English comments from Reddit, selected for their non-standard nature, which have been manually normalised and professionally translated into five languages: French, German, Czech, Ukrainian and Russian. The challenge set was included as a test suite at WMT 2O23. This repository therefore also includes automatic translations from the submissions to the general MT task. 
+
+Scripts for analysis and reproducing results will be made available shortly!
+
 ## News
 
-- 06/10/2023: Version 1 release
+- 06/10/2023: Version 1 release: this initial release correpsonds to the first version of the challenge set at WMT 2023
+
+## Citation
+
+Please cite the following article:
+
+Rachel Bawden and Benoît Sagot. 2023. [RoCS-MT: Robustness Challenge Set for Machine Translation](https://aclanthology.org/2023.wmt-1.21/). In Proceedings of the Eighth Conference on Machine Translation, pages 198–216, Singapore. Association for Computational Linguistics.
+
+```
+@inproceedings{bawden-sagot-2023-rocs,
+    title = "{R}o{CS}-{MT}: Robustness Challenge Set for Machine Translation",
+    author = "Bawden, Rachel  and
+      Sagot, Beno{\^\i}t",
+    editor = "Koehn, Philipp  and
+      Haddon, Barry  and
+      Kocmi, Tom  and
+      Monz, Christof",
+    booktitle = "Proceedings of the Eighth Conference on Machine Translation",
+    month = dec,
+    year = "2023",
+    address = "Singapore",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2023.wmt-1.21",
+    pages = "198--216"
+}
+```
+
 
 ## Description of files
 
@@ -23,3 +53,6 @@ N.B. Some postedition still needs to be done for some of the translators due to 
 ### MT system translations
 The `sys/` folder contains system outputs from the 2023 general MT task. They correspond to the translations of the concatenation of the four versions of the source texts.
 
+### Guidelines
+
+We include the first version of the guidelines for both normalisation and translation. Both guides, in particular the one for normalisation, is likely to evolve in future releases.
