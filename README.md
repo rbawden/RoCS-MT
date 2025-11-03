@@ -1,4 +1,4 @@
-# RoCS-MT (Robust Challenge Set for Machine Translation)
+# RoCS-MT (Robust Challenge Set for Machine Translation) - version 2
 
 <img align="right" width="220" src="https://github.com/rbawden/RoCS-MT/blob/d1913e9534035772d3cae54d460bda65494643ba/img/rocs-mt-logo.png">
 
@@ -6,11 +6,36 @@ RoCS-MT, a Robust Challenge Set for Machine Translation (MT), is designed to tes
 
 ## News
 
-- 06/10/2023: Version 1 release: this initial release correpsonds to the first version of the challenge set at WMT 2023. Scripts for analysis and reproducing results will be made available shortly after the conference!
+- 06/10/2023: Version 1 release: this initial release correpsonds to the first version of the challenge set at WMT 2023.
+- 03/11/2025: Version 2 release: this release corresponds to the new version of the challenge set at WMT 2025. The dataset is also availble [on HuggingFcace](https://huggingface.co/datasets/rbawden/RoCS-MT-v2)
 
 ## Citation
 
-Please cite the following article:
+Please cite the two following articles:
+
+Rachel Bawden and Benoît Sagot. 2025. [RoCS-MT v2 at WMT 2025: Robust Challenge Set for Machine Translation](https://aclanthology.org/2025.wmt-1.58/). In Proceedings of the Tenth Conference on Machine Translation, pages 834–849, Suzhou, China. Association for Computational Linguistics.
+
+```
+@inproceedings{bawden-sagot-2025-rocs,
+    title = "{R}o{CS}-{MT} v2 at {WMT} 2025: Robust Challenge Set for Machine Translation",
+    author = "Bawden, Rachel  and
+      Sagot, Beno{\^i}t",
+    editor = "Haddow, Barry  and
+      Kocmi, Tom  and
+      Koehn, Philipp  and
+      Monz, Christof",
+    booktitle = "Proceedings of the Tenth Conference on Machine Translation",
+    month = nov,
+    year = "2025",
+    address = "Suzhou, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.wmt-1.58/",
+    pages = "834--849",
+    ISBN = "979-8-89176-341-8",
+    abstract = "RoCS-MT (Robust Challenge Set for Machine Translation) was initially proposed at the test suites track of WMT 2023. Designed to challenge MT systems' translation performance on user-generated content (UGC), it contains examples sourced from English Reddit, with manually normalised versions, aligned labelled annotation spans and reference translations in five languages. In this article, we describe version 2 of RoCS-MT in the context of the 2025 WMT test suites track. This new version contains several improvements on the initial version including (i) minor corrections of normalisation, (ii) corrections to reference translations and addition of alternative references to accommodate for different possible genders (e.g. of speakers) and (iii) a redesign and re-annotation of normalisation spans for further analysis of different non-standard UGC phenomena. We describe these changes and provide results and preliminary analysis of the MT submissions to the 2025 general translation task."
+}
+```
+
 
 Rachel Bawden and Benoît Sagot. 2023. [RoCS-MT: Robustness Challenge Set for Machine Translation](https://aclanthology.org/2023.wmt-1.21/). In Proceedings of the Eighth Conference on Machine Translation, pages 198–216, Singapore. Association for Computational Linguistics.
 
